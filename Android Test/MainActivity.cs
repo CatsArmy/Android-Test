@@ -38,26 +38,29 @@ namespace Android_Test
             InOutResult = FindViewById<TextView>(Resource.Id.tvInOutResult)!;
             operations = new List<Operation>();
             numbers = new List<double>();
+            numbers.Clear();
+            operations.Clear();
             index = 0;
-            numbers[index] = index;
+            numbers.Add(index);
             InOutResult.Text = $"{numbers[index]}";
 
             for (int i = 0; i < Numpad.Length; i++)
             {
                 //Resource.Id.btn0 is a int and btn1 is the same int + 1 and so on
-                Numpad[i] = FindViewById<Button>(Resource.Id.btn0 + i)!;
-                Numpad[i].Click += (sender, e) => OnClick_Numpad(sender, e, i);
+                Numpad[i] = FindViewById<Button>(Resource.Id.btn0 + i);
+                int x = int.Parse($"{i}");
+                Numpad[i].Click += (sender, e) => OnClick_Numpad(sender, e, x);
             }
 
             ToggleNegitivity = FindViewById<Button>(Resource.Id.btnToggleNegitivity)!;
-            ToggleNegitivity.Click += OnClick_ToggleNegitivity;
+            ToggleNegitivity.Click += OnClick_ToggleNegativity;
             AllClear = FindViewById<Button>(Resource.Id.btnAllClear)!;
             AllClear.Click += OnClick_AllClear!;
             Percent = FindViewById<Button>(Resource.Id.btnPercent)!;
             Percent.Click += OnClick_Percent;
             Divide = FindViewById<Button>(Resource.Id.btnDivide)!;
             //Divide.Click += OnClick_Division!;
-            Divide.Click += (sender, e) => OnClick_Operation(sender, e, Operation.Division)!;
+            Divide.Click += (sender, e) => OnClick_Operation(sender, e, Operation.Division);
             Dot = FindViewById<Button>(Resource.Id.btnDot)!;
             Dot.Click += OnClick_Dot;
             Multiply = FindViewById<Button>(Resource.Id.btnMultiply)!;
@@ -73,9 +76,15 @@ namespace Android_Test
             Equals.Click += OnClick_Equals;
         }
 
-        private void OnClick_ToggleNegitivity(object sender, EventArgs e)
+        private void AddNumpadNumber(object sender, EventArgs e, int number)
         {
-            if (numbers.Count != index)
+            int i = int.Parse($"{number}");
+            OnClick_Numpad(sender, e, number);
+        }
+
+        private void OnClick_ToggleNegativity(object sender, EventArgs e)
+        {
+            if (numbers.Count == index)
             {
                 return;
             }
@@ -100,12 +109,13 @@ namespace Android_Test
             }
             dot = true;
             hasDot = true;
+            InOutResult.Text = Evaluate();
             //Correctly update output.
         }
 
         private void OnClick_Operation(object sender, EventArgs e, Operation operation)
         {
-            if (numbers.Count != index && index > 0)
+            if (numbers.Count == operations.Count)
             {
                 operations[index] = operation;
                 return;
@@ -114,6 +124,7 @@ namespace Android_Test
             index++;
             dot = false;
             hasDot = false;
+            InOutResult.Text = Evaluate();
         }
 
         private void OnClick_Equals(object sender, EventArgs e)
@@ -121,20 +132,46 @@ namespace Android_Test
 
         }
 
+        public string Evaluate()
+        {
+            string result = string.Empty;
+            //if (operations.Count < 1)
+            //    return "Invalid operation";
+            ////operations.count ?== index
+            //if (numbers.Count == index)
+            //{
+
+            //}
+            for (int i = 0; i < numbers.Count; i++)
+            {
+                result += $"{numbers[i]}";
+                if (++i < numbers.Count)
+                {
+                    continue;
+                }
+                try
+                {
+                    result += $" {operations[i].GetValue()} ";
+                }
+                catch (Exception) { }
+            }
+            return result;
+        }
+
         private void OnClick_Numpad(object sender, EventArgs e, int number)
         {
             if (dot)
             {
-                if (numbers.Count != index)
+                if (numbers.Count == index)
                     numbers.Add(double.Parse($"0.{number}"));
                 else
                     numbers[index] = double.Parse($"{numbers[index]}.{number}");
                 dot = false;
                 return;
             }
-            if (numbers.Count != index)
+            if (numbers.Count == index)
             {
-                numbers.Add(double.Parse($"{numbers[index]}{number}"));
+                numbers.Add(double.Parse($"{number}"));
                 return;
             }
 
@@ -146,21 +183,43 @@ namespace Android_Test
             if (sender != AllClear)
             {
                 return;
+
             }
-            operations.Clear();
             numbers.Clear();
+            operations.Clear();
             index = 0;
+            numbers.Add(index);
+            InOutResult.Text = $"0";
             dot = false;
             hasDot = false;
             text = string.Empty;
             InOutResult.Text = $"{numbers[index]}";
         }
-        private enum Operation
+
+    }
+    public static class OperationExtensions
+    {
+        public static string GetValue(this Operation operation)
         {
-            Addition = '+',
-            Subtraction = '-',
-            Multiplication = '*',
-            Division = '/'
+            string result = string.Empty;
+            switch (operation)
+            {
+                case Operation.Addition:
+                    result = "+";
+                    break;
+                case Operation.Subtraction:
+                    result = "-";
+                    break;
+                case Operation.Multiplication:
+                    result = "*";
+                    break;
+                case Operation.Division:
+                    result = "/";
+                    break;
+                default:
+                    break;
+            };
+            return result;
         }
     }
 }
