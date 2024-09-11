@@ -152,46 +152,75 @@ namespace Android_Test
         }
         public string Calculate()
         {
-            string evaluate = Evaluate();
             if (numbers.Count <= 0)
             {
-                return evaluate;
+                return Evaluate();
             }
-            double result = numbers[0];
-            //if (operations.Count < 1)
-            //    return "Invalid operation";
-            ////operations.count ?== index
-            //if (numbers.Count == index)
-            //{
-
-            //}
-
-            for (int i = 0; i < numbers.Count; i++)
+            double result = 0.0;
+            double priority = 0.0;
+            bool isPriority = false;
+            bool priorityPolarity = true;
+            for (int i = 0; i < numbers.Count - 1; i++)
             {
-                if (i >= operations.Count)
-                {
-                    continue;
-                }
                 switch (operations[i])
                 {
                     case Operation.Addition:
-                        result += numbers[++i];
+                        if (isPriority)
+                        {
+                            result += priority;
+                            priority = 0.0;
+                            isPriority = false;
+                            break;
+                        }
+                        result += numbers[i];
+                        priorityPolarity = true;
                         break;
                     case Operation.Subtraction:
-                        result -= numbers[++i];
+                        if (isPriority)
+                        {
+                            result -= priority;
+                            priority = 0.0;
+                            isPriority = false;
+                            break;
+                        }
+                        result -= numbers[i];
+                        priorityPolarity = false;
                         break;
+
                     case Operation.Multiplication:
-                        result *= numbers[++i];
+                        if (isPriority)
+                        {
+                            priority *= numbers[i];
+                            break;
+                        }
+                        priority = numbers[i] * numbers[++i];
+                        isPriority = true;
                         break;
+
                     case Operation.Division:
-                        result /= numbers[++i];
+                        if (isPriority)
+                        {
+                            priority /= numbers[i];
+                            break;
+                        }
+                        priority = numbers[i] / numbers[++i];
+                        isPriority = true;
                         break;
                     default:
-                        break;//WRONG MATAH NEED PRIORITYS
+                        break;
+                }
+                switch (priorityPolarity)
+                {
+                    case true:
+                        result += priority;
+                        break;
+
+                    case false:
+                        result -= priority;
+                        break;
                 }
             }
-            evaluate += $" = {result}";
-            return evaluate;
+            return result.ToString();
         }
 
         private void OnClick_Numpad(object sender, EventArgs e, int number)
