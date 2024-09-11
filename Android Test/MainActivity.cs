@@ -42,7 +42,7 @@ namespace Android_Test
             operations.Clear();
             index = 0;
             numbers.Add(index);
-            InOutResult.Text = $"{numbers[index]}";
+            InOutResult.Text = Evaluate();
 
             for (int i = 0; i < Numpad.Length; i++)
             {
@@ -59,7 +59,7 @@ namespace Android_Test
             Percent = FindViewById<Button>(Resource.Id.btnPercent)!;
             Percent.Click += OnClick_Percent;
             Divide = FindViewById<Button>(Resource.Id.btnDivide)!;
-            //Divide.Click += OnClick_Division!;
+            //Divide.Click += OnClick_Division
             Divide.Click += (sender, e) => OnClick_Operation(sender, e, Operation.Division);
             Dot = FindViewById<Button>(Resource.Id.btnDot)!;
             Dot.Click += OnClick_Dot;
@@ -76,12 +76,6 @@ namespace Android_Test
             Equals.Click += OnClick_Equals;
         }
 
-        private void AddNumpadNumber(object sender, EventArgs e, int number)
-        {
-            int i = int.Parse($"{number}");
-            OnClick_Numpad(sender, e, number);
-        }
-
         private void OnClick_ToggleNegativity(object sender, EventArgs e)
         {
             if (numbers.Count == index)
@@ -94,11 +88,12 @@ namespace Android_Test
             }
             const int flipPolarity = -1;
             numbers[index] *= flipPolarity;
+            InOutResult.Text = Evaluate();
         }
 
         private void OnClick_Percent(object sender, EventArgs e)
         {
-
+            InOutResult.Text = Evaluate();
         }
 
         private void OnClick_Dot(object sender, EventArgs e)
@@ -118,6 +113,7 @@ namespace Android_Test
             if (numbers.Count == operations.Count)
             {
                 operations[index] = operation;
+                InOutResult.Text = Evaluate();
                 return;
             }
             operations.Add(operation);
@@ -129,7 +125,7 @@ namespace Android_Test
 
         private void OnClick_Equals(object sender, EventArgs e)
         {
-
+            InOutResult.Text = Calculate();
         }
 
         public string Evaluate()
@@ -142,20 +138,60 @@ namespace Android_Test
             //{
 
             //}
+
             for (int i = 0; i < numbers.Count; i++)
             {
                 result += $"{numbers[i]}";
-                if (++i < numbers.Count)
+                if (i >= operations.Count)
                 {
                     continue;
                 }
-                try
-                {
-                    result += $" {operations[i].GetValue()} ";
-                }
-                catch (Exception) { }
+                result += $" {operations[i].GetValue()} ";
             }
             return result;
+        }
+        public string Calculate()
+        {
+            string evaluate = Evaluate();
+            if (numbers.Count <= 0)
+            {
+                return evaluate;
+            }
+            double result = numbers[0];
+            //if (operations.Count < 1)
+            //    return "Invalid operation";
+            ////operations.count ?== index
+            //if (numbers.Count == index)
+            //{
+
+            //}
+
+            for (int i = 0; i < numbers.Count; i++)
+            {
+                if (i >= operations.Count)
+                {
+                    continue;
+                }
+                switch (operations[i])
+                {
+                    case Operation.Addition:
+                        result += numbers[++i];
+                        break;
+                    case Operation.Subtraction:
+                        result -= numbers[++i];
+                        break;
+                    case Operation.Multiplication:
+                        result *= numbers[++i];
+                        break;
+                    case Operation.Division:
+                        result /= numbers[++i];
+                        break;
+                    default:
+                        break;//WRONG MATAH NEED PRIORITYS
+                }
+            }
+            evaluate += $" = {result}";
+            return evaluate;
         }
 
         private void OnClick_Numpad(object sender, EventArgs e, int number)
@@ -167,15 +203,18 @@ namespace Android_Test
                 else
                     numbers[index] = double.Parse($"{numbers[index]}.{number}");
                 dot = false;
+                InOutResult.Text = Evaluate();
                 return;
             }
             if (numbers.Count == index)
             {
                 numbers.Add(double.Parse($"{number}"));
+                InOutResult.Text = Evaluate();
                 return;
             }
 
             numbers[index] = double.Parse($"{numbers[index]}{number}");
+            InOutResult.Text = Evaluate();
         }
 
         private void OnClick_AllClear(object sender, EventArgs e)
@@ -196,30 +235,5 @@ namespace Android_Test
             InOutResult.Text = $"{numbers[index]}";
         }
 
-    }
-    public static class OperationExtensions
-    {
-        public static string GetValue(this Operation operation)
-        {
-            string result = string.Empty;
-            switch (operation)
-            {
-                case Operation.Addition:
-                    result = "+";
-                    break;
-                case Operation.Subtraction:
-                    result = "-";
-                    break;
-                case Operation.Multiplication:
-                    result = "*";
-                    break;
-                case Operation.Division:
-                    result = "/";
-                    break;
-                default:
-                    break;
-            };
-            return result;
-        }
     }
 }
