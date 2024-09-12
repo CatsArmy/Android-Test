@@ -1,60 +1,69 @@
 namespace Android_Test
 {
-    //Color Palettes https://www.realtimecolors.com/?colors=e5ebe6-050605-9fcba4-415d50-79a495&fonts=Inter-Inter
     [Activity(Label = "@string/app_name", MainLauncher = true)]
     public class MainActivity : Activity
     {
-        private TextView InOutResult;
+#pragma warning disable CS8618 
+        // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+        private TextView InputResult;
+        private TextView OutputResult;
 
         private Button[] Numpad = new Button[10];
 
         private Button FlipPolarity;
         private Button AllClear;
 
-        private Button Percent;
+        private Button Modulus;
         private Button Dot;
 
         private Button Divide;
         private Button Multiply;
         private Button Subtraction;
         private Button Addition;
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
         private Button Equals;
+#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
+#pragma warning restore CS8618
+        // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-        // (+/-)num1 (Action(['+','-','*','/']) (+/-)num2...
-        //operations length is index -1 where index > 0
         private List<Operation> operations = [];
         private List<double> numbers = [];
         private bool hasDot = false;
         private bool dot = false;
 
+#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            SetContentView(Resource.Layout.activity_main);
+            base.SetContentView(Resource.Layout.activity_main);
 
+            AndroidX.Compose.Material3.TextKt
             //Investigate Figma + google Relay to android XML/resource files.
             //Investigate more on how this shit works
 
-            InOutResult = base.FindViewById<TextView>(Resource.Id.tvInOutResult);
+            InputResult = base.FindViewById<TextView>(Resource.Id.tvInputResult);
+            OutputResult = base.FindViewById<TextView>(Resource.Id.tvOutputResult);
             numbers.Clear();
             operations.Clear();
             numbers.Add(operations.Count);
-            InOutResult.Text = Evaluate();
+            InputResult.Text = Evaluate();
+            OutputResult.Text = string.Empty;
 
             for (int i = 0; i < Numpad.Length; i++)
             {
                 //Resource.Id.btn0 is a int and btn1 is the same int + 1 and so on
                 Numpad[i] = base.FindViewById<Button>(Resource.Id.btn0 + i);
-                int x = int.Parse($"{i}");
-                Numpad[i].Click += (sender, e) => OnClick_Numpad(sender, e, x);
+                int number = int.Parse($"{i}");
+                Numpad[i].Click += (sender, e) => OnClick_Numpad(sender, e, number);
             }
 
             FlipPolarity = base.FindViewById<Button>(Resource.Id.btnFlipPolarity);
-            FlipPolarity.Click += OnClick_ToggleNegativity;
+            FlipPolarity.Click += OnClick_FlipPolarity;
             AllClear = base.FindViewById<Button>(Resource.Id.btnAllClear);
             AllClear.Click += OnClick_AllClear!;
-            Percent = base.FindViewById<Button>(Resource.Id.btnPercent);
-            Percent.Click += OnClick_Percent;
+            Modulus = base.FindViewById<Button>(Resource.Id.btnModulus);
+            Modulus.Click += (sender, e) => OnClick_Operation(sender, e, Operation.Modulus);
             Divide = base.FindViewById<Button>(Resource.Id.btnDivide);
             Divide.Click += (sender, e) => OnClick_Operation(sender, e, Operation.Division);
             Dot = base.FindViewById<Button>(Resource.Id.btnDot)!;
@@ -68,28 +77,23 @@ namespace Android_Test
             Equals = base.FindViewById<Button>(Resource.Id.btnEquals);
             Equals.Click += OnClick_Equals;
         }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8601 // Possible null reference assignment.
 
-        private void OnClick_ToggleNegativity(object sender, EventArgs e)
+        private void OnClick_FlipPolarity(object? sender, EventArgs e)
         {
             if (numbers.Count == operations.Count)
-            {
                 return;
-            }
             if (numbers[operations.Count] == 0)
-            {
                 return;
-            }
+
             const int flipPolarity = -1;
             numbers[operations.Count] *= flipPolarity;
-            InOutResult.Text = Evaluate();
+            InputResult.Text = Evaluate();
+            OutputResult.Text = string.Empty;
         }
 
-        private void OnClick_Percent(object sender, EventArgs e)
-        {
-            InOutResult.Text = Evaluate();
-        }
-
-        private void OnClick_Dot(object sender, EventArgs e)
+        private void OnClick_Dot(object? sender, EventArgs e)
         {
             if (hasDot)
             {
@@ -97,32 +101,37 @@ namespace Android_Test
             }
             dot = true;
             hasDot = true;
-            InOutResult.Text = Evaluate();
+            InputResult.Text = Evaluate();
+            OutputResult.Text = string.Empty;
         }
 
-        private void OnClick_Operation(object sender, EventArgs e, Operation operation)
+        private void OnClick_Operation(object? sender, EventArgs e, Operation operation)
         {
             if (numbers.Count == operations.Count)
             {
                 operations[operations.Count - 1] = operation;
-                InOutResult.Text = Evaluate();
+                InputResult.Text = Evaluate();
                 return;
             }
             operations.Add(operation);
             dot = false;
             hasDot = false;
-            InOutResult.Text = Evaluate();
+            InputResult.Text = Evaluate();
+            OutputResult.Text = string.Empty;
         }
 
-        private void OnClick_Equals(object sender, EventArgs e)
+        private void OnClick_Equals(object? sender, EventArgs e)
         {
-            InOutResult.Text = Calculate();
+            InputResult.Text = Evaluate();
+            OutputResult.Text = Calculate();
         }
 
         public string Evaluate()
         {
+            if (numbers.Count <= 0)
+                return string.Empty;
+
             string result = string.Empty;
-            if (numbers.Count <= 0) { return result; }
             for (int i = 0; i < numbers.Count - 1; i++)
             {
                 result += $"{numbers[i]}";
@@ -139,133 +148,106 @@ namespace Android_Test
             }
             return result;
         }
-        public string Calculate()
+
+        public string Calculate(List<double> numbers, List<Operation> operations)
         {
-            if (numbers.Count <= 0)
+            if (numbers.Count - 1 != operations.Count)
+                return string.Empty;
+            for (int i = 0; i < operations.Count; i++)
             {
-                return Evaluate();
+                switch (operations[i])
+                {
+                    case Operation.Multiplication:
+                        numbers[i] *= numbers[i + 1];
+                        numbers.RemoveAt(i + 1);
+                        operations.RemoveAt(i);
+                        i--;
+                        break;
+                    case Operation.Division:
+                        if (numbers[i + 1] == 0)
+                            return "Cannot divide by zero.";
+                        numbers[i] /= numbers[i + 1];
+                        numbers.RemoveAt(i + 1);
+                        operations.RemoveAt(i);
+                        i--;
+                        break;
+                    case Operation.Modulus:
+                        if (numbers[i + 1] == 0)
+                            return "Cannot perform modulus with zero.";
+                        numbers[i] %= numbers[i + 1];
+                        numbers.RemoveAt(i + 1);
+                        operations.RemoveAt(i);
+                        i--;
+                        break;
+                    default:
+                        break;
+                }
             }
 
-            double result = 0.0;
-            double priority = 0.0;
-            bool isPriority = false;
-            bool priorityPolarity = true;
-            for (int i = 0; i < numbers.Count - 1; i++)
+            double result = numbers[0];
+
+            for (int i = 0, j = 1; i < operations.Count; i++)
             {
                 switch (operations[i])
                 {
                     case Operation.Addition:
-                        if (isPriority)
-                        {
-                            result += priority;
-                            priority = 0.0;
-                            isPriority = false;
-                            break;
-                        }
-                        result += numbers[i];
-                        priorityPolarity = true;
+                        result += numbers[j];
+                        j++;
                         break;
-
                     case Operation.Subtraction:
-                        if (isPriority)
-                        {
-                            result -= priority;
-                            priority = 0.0;
-                            isPriority = false;
-                            break;
-                        }
-                        result -= numbers[i];
-                        priorityPolarity = false;
+                        result -= numbers[j];
+                        j++;
                         break;
-
-                    case Operation.Multiplication:
-                        if (isPriority)
-                        {
-                            priority *= numbers[i];
-                            break;
-                        }
-                        priority = numbers[i] * numbers[++i];
-                        isPriority = true;
-                        break;
-
-                    case Operation.Division:
-                        if (isPriority)
-                        {
-                            priority /= numbers[i];
-                            break;
-                        }
-                        priority = numbers[i] / numbers[++i];
-                        isPriority = true;
-                        break;
-                }
-
-                switch (priorityPolarity)
-                {
-                    case true:
-                        result += priority;
-                        break;
-
-                    case false:
-                        result -= priority;
+                    default:
                         break;
                 }
             }
             return $"{result}";
         }
 
-        private void OnClick_Numpad(object sender, EventArgs e, int number)
+        public string Calculate()
+        {
+            List<double> numbers = this.numbers.ToArray().ToList();
+            List<Operation> operations = this.operations.ToArray().ToList();
+            return Calculate(numbers, operations);
+        }
+
+
+        private void OnClick_Numpad(object? sender, EventArgs e, int number)
         {
             double value;
             switch (numbers.Count == operations.Count)
             {
                 case true:
-                    value = double.Parse(dot ? $"0.{number}" : $"{number}");
+                    value = double.Parse($"{(dot ? '.' : string.Empty)}{number}");
                     numbers.Add(value);
                     break;
 
                 case false:
-                    value = double.Parse($"{numbers[operations.Count]}{(dot ? '.' : "")}{number}");
+                    value = double.Parse($"{numbers[operations.Count]}{(dot ? '.' : string.Empty)}{number}");
                     numbers[operations.Count] = value;
                     break;
             }
-            InOutResult.Text = Evaluate();
+            InputResult.Text = Evaluate();
+            OutputResult.Text = string.Empty;
         }
 
-        private void OnClick_AllClear(object sender, EventArgs e)
+        private void OnClick_AllClear(object? sender, EventArgs e)
         {
             if (sender != AllClear)
             {
                 return;
 
             }
+
             dot = false;
             hasDot = false;
             numbers.Clear();
             operations.Clear();
             numbers.Add(operations.Count);
-            InOutResult.Text = $"{operations.Count}";
+            InputResult.Text = $"{operations.Count}";
+            OutputResult.Text = string.Empty;
         }
 
     }
 }
-
-
-
-
-
-///:root[data-theme="light"] {
-///--text: #141a15;
-///  --background: #f9faf9;
-///  --primary: #346039;
-///  --secondary: #a2beb1;
-///  --accent: #5b8677;
-///}
-///:root[data - theme = "dark"] {
-///    --text: #e5ebe6;
-///  --background: #050605;
-///  --primary: #9fcba4;
-///  --secondary: #415d50;
-///  --accent: #79a495;
-///}
-///
-/// 

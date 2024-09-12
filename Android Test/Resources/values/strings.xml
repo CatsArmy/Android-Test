@@ -1,5 +1,5 @@
+<!-- Color Palettes https://www.realtimecolors.com/?colors=e5ebe6-050605-9fcba4-415d50-79a495&fonts=Inter-Inter -->
 <resources>
     <string name="app_name">Android_Test</string>
     <string name="app_text">Hello, Android!</string>
-    <string name="buttonColor">#171d1a</string>
 </resources>
