@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Android_Test</string>
     <string name="app_text">Hello, Android!</string>
+    <string name="buttonColor">#171d1a</string>
 </resources>

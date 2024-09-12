@@ -1,5 +1,6 @@
 namespace Android_Test
 {
+    //Color Palettes https://www.realtimecolors.com/?colors=e5ebe6-050605-9fcba4-415d50-79a495&fonts=Inter-Inter
     [Activity(Label = "@string/app_name", MainLauncher = true)]
     public class MainActivity : Activity
     {
@@ -97,7 +98,6 @@ namespace Android_Test
             dot = true;
             hasDot = true;
             InOutResult.Text = Evaluate();
-            //Correctly update output.
         }
 
         private void OnClick_Operation(object sender, EventArgs e, Operation operation)
@@ -133,6 +133,10 @@ namespace Android_Test
                 result += $" {operations[i].GetValue()} ";
             }
             result += $"{numbers[numbers.Count - 1]}";
+            if (numbers.Count == operations.Count)
+            {
+                result += $"{operations[operations.Count - 1].GetValue()}";
+            }
             return result;
         }
         public string Calculate()
@@ -244,3 +248,24 @@ namespace Android_Test
 
     }
 }
+
+
+
+
+
+///:root[data-theme="light"] {
+///--text: #141a15;
+///  --background: #f9faf9;
+///  --primary: #346039;
+///  --secondary: #a2beb1;
+///  --accent: #5b8677;
+///}
+///:root[data - theme = "dark"] {
+///    --text: #e5ebe6;
+///  --background: #050605;
+///  --primary: #9fcba4;
+///  --secondary: #415d50;
+///  --accent: #79a495;
+///}
+///
+/// 
