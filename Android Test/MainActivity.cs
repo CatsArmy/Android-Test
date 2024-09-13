@@ -38,7 +38,6 @@ namespace Android_Test
             base.OnCreate(savedInstanceState);
             base.SetContentView(Resource.Layout.activity_main);
 
-            AndroidX.Compose.Material3.TextKt
             //Investigate Figma + google Relay to android XML/resource files.
             //Investigate more on how this shit works
 
