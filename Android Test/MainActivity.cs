@@ -24,7 +24,7 @@ namespace Android_Test
         private Button Equals;
 #pragma warning restore CS0108 // Member hides inherited member; missing new keyword
 #pragma warning restore CS8618
-        // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+        // Non-nullable field must contain xxa non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         private List<Operation> operations = [];
         private List<double> numbers = [];
